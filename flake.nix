@@ -34,11 +34,6 @@
           install -m 644 ppd/*.ppd $out/share/cups/model/xprinterpos/
           install -m 755 -D filter/x64/rastertosnailep-pos $out/lib/cups/filter/rastertosnailep-pos
         '';
-
-        meta = {
-          description = "CUPS drivers for Xprinter 58 & 80 thermal printers";
-          platforms = [ "x86_64-linux" ];
-        };
       };
 
       # Overlay
