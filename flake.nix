@@ -3,42 +3,21 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable"; # Or your preferred channel
-    #flake-utils.url = "github:numtide/flake-utils";
-
-    # Input for your driver repository
-#    xprinter-pos = {
-#      url = "github:jujodeve/xprinter-pos"; # <-- IMPORTANT: Replace with your repo details
-#      inputs.nixpkgs.follows = "nixpkgs";
-#    };
-    #        stdenv,
-    #  cups,
-    #  lib,
-    #  glibc,
-    #  fetchFromGitLab,
-    #  gcc-unwrapped,
-    #  autoPatchelfHook,
   };
 
-  outputs =
-    {
-      #self,
-      nixpkgs
-      
-      #flake-utils,
-      #xprinter-pos,
-      #pkgs,
-      #lib
-    }:
-    let
+  outputs = { self, nixpkgs }:
+  let
+      pkgName = "xprinter-pos";
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
-    in
-    {
-      xprinter-pos = pkgs.stdenv.mkDerivation {
+  in 
+  {
+    packages.${system}.default = pkgs.stdenv.mkDerivation {
 
-        name = "cups-xprinterpos";
+        name = pkgName;
         version = "1.0";
         system = "x86_64-linux";
+        src = self;
 
         nativeBuildInputs = [
           pkgs.autoPatchelfHook
@@ -56,14 +35,15 @@
           install -m 755 -D filter/x64/rastertosnailep-pos $out/lib/cups/filter/rastertosnailep-pos
         '';
 
-       #  meta = with lib; {
-       #    description = "CUPS filter for XPrinter POS thermal printers";
-       #    homepage = "https://github.com/jotix/xprinterpos";
-       #    platforms = platforms.linux;
-       #    maintainers = with maintainers; [ jotix ];
-       #    license = licenses.bsd2;
-       #  };
+        meta = {
+          description = "CUPS drivers for Xprinter 58 & 80 thermal printers";
+          platforms = [ "x86_64-linux" ];
+        };
+      };
+
+      # Overlay
+      overlays.default = final: prev: {
+        ${pkgName} = self.packages.${prev.system}.default;
       };
     };
-
 }
