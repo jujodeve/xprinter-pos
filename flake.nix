@@ -6,10 +6,10 @@
     #flake-utils.url = "github:numtide/flake-utils";
 
     # Input for your driver repository
-    xprinter-pos = {
-      url = "github:jujodeve/xprinter-pos"; # <-- IMPORTANT: Replace with your repo details
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+#    xprinter-pos = {
+#      url = "github:jujodeve/xprinter-pos"; # <-- IMPORTANT: Replace with your repo details
+#      inputs.nixpkgs.follows = "nixpkgs";
+#    };
     #        stdenv,
     #  cups,
     #  lib,
@@ -22,7 +22,8 @@
   outputs =
     {
       #self,
-      nixpkgs,
+      nixpkgs
+      
       #flake-utils,
       #xprinter-pos,
       #pkgs,
