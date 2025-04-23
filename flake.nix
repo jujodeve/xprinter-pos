@@ -1,113 +1,68 @@
 {
-  description = "CUPS drivers from GitHub";
+  description = "CUPS drivers for Xprinter 58 & 80 thermal printers";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable"; # Or your preferred channel
-    flake-utils.url = "github:numtide/flake-utils";
+    #flake-utils.url = "github:numtide/flake-utils";
 
     # Input for your driver repository
-    cups-drivers-repo = {
-      url = "github:<YOUR_GITHUB_USERNAME>/<YOUR_REPO_NAME>/<OPTIONAL_BRANCH_OR_TAG>"; # <-- IMPORTANT: Replace with your repo details
-      flake = false; # Assuming the repo itself is not a flake
+    xprinter-pos = {
+      url = "github:jujodeve/xprinter-pos"; # <-- IMPORTANT: Replace with your repo details
+      inputs.nixpkgs.follows = "nixpkgs";
     };
+    #        stdenv,
+    #  cups,
+    #  lib,
+    #  glibc,
+    #  fetchFromGitLab,
+    #  gcc-unwrapped,
+    #  autoPatchelfHook,
   };
 
-  outputs = { self, nixpkgs, flake-utils, cups-drivers-repo }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        pkgs = nixpkgs.legacyPackages.${system};
+  outputs =
+    {
+      #self,
+      nixpkgs,
+      #flake-utils,
+      #xprinter-pos,
+      #pkgs,
+      #lib
+    }:
+    let
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
+    in
+    {
+      xprinter-pos = pkgs.stdenv.mkDerivation {
 
-        # --- Option 1: If you just need PPD files ---
-        # This fetches the entire repo and makes PPD files available
-        # Adjust the path 'path/to/ppds' to the actual directory containing .ppd files in the repo
-        cupsPpdFiles = pkgs.runCommand "custom-cups-ppds" { } ''
-          mkdir -p $out/share/cups/model/custom
-          cp ${cups-drivers-repo}/path/to/ppds/*.ppd $out/share/cups/model/custom # <-- Adjust path/to/ppds
-          # If files are in the root: cp ${cups-drivers-repo}/*.ppd $out/share/cups/model/custom
+        name = "cups-xprinterpos";
+        version = "1.0";
+        system = "x86_64-linux";
+
+        nativeBuildInputs = [
+          pkgs.autoPatchelfHook
+        ];
+
+        buildInputs = with pkgs; [
+          cups
+          glibc
+          gcc-unwrapped
+        ];
+
+        installPhase = ''
+          install -d -m 777 $out/share/cups/model/xprinterpos/
+          install -m 644 ppd/*.ppd $out/share/cups/model/xprinterpos/
+          install -m 755 -D filter/x64/rastertosnailep-pos $out/lib/cups/filter/rastertosnailep-pos
         '';
 
+       #  meta = with lib; {
+       #    description = "CUPS filter for XPrinter POS thermal printers";
+       #    homepage = "https://github.com/jotix/xprinterpos";
+       #    platforms = platforms.linux;
+       #    maintainers = with maintainers; [ jotix ];
+       #    license = licenses.bsd2;
+       #  };
+      };
+    };
 
-        # --- Option 2: If the drivers need building (Example using stdenv.mkDerivation) ---
-        # This is a placeholder. You'll need to adapt build steps significantly
-        # based on how the drivers are actually built (e.g., configure, make, install).
-        customCupsDriverPkg = pkgs.stdenv.mkDerivation {
-           pname = "custom-cups-driver";
-           version = "0.1"; # Or derive from repo info
-
-           src = cups-drivers-repo;
-
-           # Add build inputs if needed (e.g., build tools, libraries)
-           # buildInputs = [ pkgs.gcc pkgs.make ... ];
-
-           # Add build commands - HIGHLY DEPENDENT ON THE DRIVER SOURCE
-           buildPhase = ''
-             runHook preBuild
-             # cd src # If needed
-             # ./configure --prefix=$out ... # Example configure step
-             make # Example build step
-             runHook postBuild
-           '';
-
-           # Add install commands - HIGHLY DEPENDENT ON THE DRIVER SOURCE
-           installPhase = ''
-             runHook preInstall
-             # make install # Example install step
-             # Manually copy files if 'make install' doesn't work or isn't available
-             mkdir -p $out/share/cups/model # Example path
-             cp path/to/built/driver.ppd $out/share/cups/model/ # Example path
-             mkdir -p $out/lib/cups/filter # Example path
-             cp path/to/built/filter $out/lib/cups/filter/ # Example path
-             runHook postInstall
-           '';
-
-           meta = {
-             description = "Custom CUPS driver package";
-             # license = pkgs.lib.licenses. # Add license if known
-           };
-        };
-
-      in
-      {
-        # == Choose ONE of the following packages based on your needs ==
-
-        # Option 1: Package providing only PPD files
-        packages.ppds = cupsPpdFiles;
-
-        # Option 2: Package providing built driver components
-        packages.driver = customCupsDriverPkg; # Use this if you built the driver
-
-        # Default package (choose one)
-        packages.default = self.packages.${system}.ppds; # Or .driver
-
-        # --- NixOS Module (Optional) ---
-        # This allows easy integration into your NixOS configuration
-        nixosModules.default = { config, lib, ... }: {
-          services.printing = {
-            enable = true;
-            drivers = [
-              # If using Option 1 (PPDs only):
-              cupsPpdFiles
-
-              # If using Option 2 (Built Driver):
-              # customCupsDriverPkg # Add the built package here
-            ];
-          };
-        };
-
-        # --- Dev Shell (Optional) ---
-        # Provides an environment with the drivers potentially available
-        devShells.default = pkgs.mkShell {
-           buildInputs = [
-              # Add packages needed for development or testing, if any
-              # pkgs.cups # Example: include cups itself
-           ];
-
-           # Example: Make PPDs available in the shell environment (adjust path)
-           # shellHook = ''
-           #  export PPD_DIR="${cupsPpdFiles}/share/cups/model/custom"
-           #  echo "Custom PPDs available in \$PPD_DIR"
-           # '';
-        };
-      }
-    );
 }
