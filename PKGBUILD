@@ -7,7 +7,7 @@ arch=('x86_64')
 url="https://github.com/jujodeve/xprinterpos.git"
 license=('BSD')
 depends=('cups')
-makedepends=('unzip')
+makedepends=('minizip')
 provides=('xprinterpos')
 
 source=("git+https://github.com/jujodeve/xprinterpos.git")
