@@ -4,13 +4,13 @@ pkgver=r1
 pkgrel=1
 pkgdesc=" CUPS filter for XPrinter thermal printers"
 arch=('x86_64')
-url="https://gitlab.com/jotix/xprinterpos.git"
+url="https://github.com/jujodeve/xprinterpos.git"
 license=('BSD')
 depends=('cups')
 makedepends=('unzip')
 provides=('xprinterpos')
 
-source=("git+https://gitlab.com/jotix/xprinterpos.git")
+source=("git+https://github.com/jujodeve/xprinterpos.git")
 md5sums=('SKIP')
 
 package() {
