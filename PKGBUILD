@@ -1,6 +1,6 @@
 # Maintainer:  <jujodeve@gmail.com>
 pkgname=xprinterpos
-pkgver=1.0
+pkgver=0.1
 pkgrel=1
 pkgdesc=" CUPS filter for XPrinter thermal printers"
 arch=('x86_64')
